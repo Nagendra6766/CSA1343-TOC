@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX_STATES 100
+
+// Structure to represent a node in the adjacency list
+struct Node {
+    int dest;
+    struct Node* next;
+};
+
+// Structure to represent a state in NFA
+struct State {
+    bool visited;
+    struct Node* transitions;
+};
+
+// Function to add a transition from 'src' to 'dest'
+void addTransition(struct State states[], int src, int dest) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->dest = dest;
+    newNode->next = states[src].transitions;
+    states[src].transitions = newNode;
+}
+
+// Function to perform depth-first search to find ε-closure for a state
+void epsilonClosure(struct State states[], int state, bool visited[]) {
+    visited[state] = true;
+    
+    // Traverse through all ε-transitions from the current state
+    struct Node* transition = states[state].transitions;
+    while (transition != NULL) {
+        if (!visited[transition->dest])
+            epsilonClosure(states, transition->dest, visited);
+        transition = transition->next;
+    }
+}
+
+// Function to find ε-closure for all states
+void findEpsilonClosure(struct State states[], int numStates) {
+    for (int i = 0; i < numStates; i++) {
+        // Initialize visited array for each state
+        bool visited[MAX_STATES] = {false};
+        
+        // Find ε-closure for state 'i'
+        epsilonClosure(states, i, visited);
+        
+        // Print ε-closure for state 'i'
+        printf("ε-closure(%d): {", i);
+        for (int j = 0; j < numStates; j++) {
+            if (visited[j])
+                printf(" %d", j);
+        }
+        printf(" }\n");
+    }
+}
+
+int main() {
+    // Number of states in the NFA
+    int numStates;
+    printf("Enter the number of states: ");
+    scanf("%d", &numStates);
+
+    // Initialize states
+    struct State states[MAX_STATES];
+    for (int i = 0; i < numStates; i++) {
+        states[i].visited = false;
+        states[i].transitions = NULL;
+    }
+
+    // Number of transitions
+    int numTransitions;
+    printf("Enter the number of transitions: ");
+    scanf("%d", &numTransitions);
+
+    // Input transitions
+    printf("Enter transitions (source destination, -1 to end):\n");
+    int src, dest;
+    while (numTransitions--) {
+        scanf("%d %d", &src, &dest);
+        if (src == -1 || dest == -1)
+            break;
+        addTransition(states, src, dest);
+    }
+
+    // Find and print ε-closure for all states
+    findEpsilonClosure(states, numStates);
+
+    return 0;
+}
