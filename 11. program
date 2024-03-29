@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_STATES 100
+
+int n; // Number of states
+int epsilonTransitions[MAX_STATES][MAX_STATES]; // Epsilon transitions matrix
+
+void addEpsilonTransition(int from, int to) {
+    epsilonTransitions[from][to] = 1;
+}
+
+void epsilonClosure(int state, bool visited[]) {
+    visited[state] = true;
+    for (int i = 0; i < n; i++) {
+        if (epsilonTransitions[state][i] && !visited[i]) {
+            epsilonClosure(i, visited);
+        }
+    }
+}
+
+void printEpsilonClosure() {
+    printf("Epsilon Closures:\n");
+    for (int i = 0; i < n; i++) {
+        printf("ε-Closure(%d): { ", i);
+        bool visited[MAX_STATES] = { false };
+        epsilonClosure(i, visited);
+        for (int j = 0; j < n; j++) {
+            if (visited[j]) {
+                printf("%d ", j);
+            }
+        }
+        printf("}\n");
+    }
+}
+
+int main() {
+    printf("Enter the number of states: ");
+    scanf("%d", &n);
+
+    // Initialize epsilon transitions matrix
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            epsilonTransitions[i][j] = 0;
+        }
+    }
+
+    // Take epsilon transitions as input
+    int from, to;
+    printf("Enter epsilon transitions as pairs (from to), enter -1 -1 to end:\n");
+    while (true) {
+        scanf("%d %d", &from, &to);
+        if (from == -1 && to == -1) {
+            break;
+        }
+        addEpsilonTransition(from, to);
+    }
+
+    printEpsilonClosure();
+
+    return 0;
+}
